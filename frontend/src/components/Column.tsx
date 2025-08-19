@@ -1,6 +1,6 @@
 import React from 'react';
-import { Column as ColumnType, Card } from '../types';
-import CardComponent from './Card';
+import { Column as ColumnType } from '../types';
+import TaskCard from './TaskCard';
 import './Column.css';
 
 interface ColumnProps {
@@ -17,6 +17,17 @@ const Column: React.FC<ColumnProps> = ({ column, onCardMove }) => {
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.currentTarget.classList.add('drag-over');
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
   };
 
   return (
@@ -24,19 +35,27 @@ const Column: React.FC<ColumnProps> = ({ column, onCardMove }) => {
       className="column"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
     >
       <div className="column-header">
-        <h3>{column.name}</h3>
+        <h3 className="column-title">{column.name}</h3>
         <span className="card-count">({column.cards?.length || 0})</span>
       </div>
       
       <div className="cards-list">
         {column.cards?.map((card) => (
-          <CardComponent 
+          <TaskCard 
             key={card.id} 
-            card={card} 
+            card={card}
           />
         ))}
+        
+        {(!column.cards || column.cards.length === 0) && (
+          <div className="empty-column">
+            <p>Drop cards here</p>
+          </div>
+        )}
       </div>
     </div>
   );
