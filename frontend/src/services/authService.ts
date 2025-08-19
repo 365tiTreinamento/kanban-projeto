@@ -36,18 +36,14 @@ class AuthService {
         password
       });
 
-      const { token, user } = response.data;
+      const { token } = response.data;
 
       // Validar resposta
-      if (!token || !user) {
+      if (!token) {
         throw new Error('Invalid response from server');
       }
 
-      if (!user.id || !user.email) {
-        throw new Error('Invalid user data in response');
-      }
-
-      logger.info('Login successful', { userId: user.id, email: user.email });
+      logger.info('Login successful', { token: token });
       return response.data;
 
     } catch (error: any) {
