@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import api from '../api';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import ReasonModal from './ReasonModal';
+import ReasonModal from './ui/ReasonModal';
 import TimerBar from './TimerBar';
 
 interface Card { id:number; title:string; description:string; flagColor?:string; logoUrl?:string; createdAt?:string; dueAt?:string; }
