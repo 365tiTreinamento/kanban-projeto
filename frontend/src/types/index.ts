@@ -15,11 +15,13 @@ export interface Project {
 }
 
 export interface Column {
-  id: number;
-  name: string;
-  position: number;
-  projectId: number;
-  cards: Card[];
+    id: number;
+    name: string;
+    position: number;
+    projectId: number;
+    cards?: Card[];
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface Card {

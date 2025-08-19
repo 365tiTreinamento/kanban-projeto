@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { projectService } from '../services/api';
+import { projectService } from '../services/projectService';
 import { Project } from '../types';
 import { Link } from 'react-router-dom';
 import './Dashboard.css';
+
 
 export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -15,8 +16,8 @@ export default function Dashboard() {
 
   const loadProjects = async () => {
     try {
-      const response = await projectService.getAll();
-      setProjects(response.data);
+      const response = await projectService.getAllProjects();
+      setProjects(response);
     } catch (err) {
       setError('Failed to load projects');
       console.error('Error loading projects:', err);

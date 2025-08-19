@@ -89,7 +89,7 @@ class AuthService {
 
   // Verificar se o usuário está autenticado
   isAuthenticated(): boolean {
-    return storage.isValidAuthData();
+    return storage.getAuthToken() != undefined;
   }
 
   // Obter usuário atual do storage

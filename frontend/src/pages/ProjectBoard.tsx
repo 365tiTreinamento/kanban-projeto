@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { projectService, cardService } from '../services/api';
+import { projectService } from '../services/projectService';
+import { cardService } from '../services/cardService';
 import { Column, Card } from '../types';
-import ColumnComponent from '../components/Column'; // Esta importação deve estar correta
+import ColumnComponent from '../components/Column';
 import './ProjectBoard.css';
 
 export default function ProjectBoard() {
@@ -20,20 +21,20 @@ export default function ProjectBoard() {
 
   const loadProjectData = async () => {
     try {
-      const projectResponse = await projectService.getById(parseInt(id!));
-      const projectData = projectResponse.data;
+      const projectResponse = await projectService.getProjectById(parseInt(id!));
+      const projectData = projectResponse;
       setProject(projectData);
 
-      const cardsResponse = await cardService.getAll(parseInt(id!));
-      const cards = cardsResponse.data;
+      const cardsResponse = await cardService.getAllCards(parseInt(id!));
+      const cards = cardsResponse;
 
       // Organize cards by column
-      const columnsWithCards = projectData.columns.map((column: Column) => ({
+      const columnsWithCards = projectData.columns?.map((column: Column) => ({
         ...column,
         cards: cards.filter((card: Card) => card.columnId === column.id)
       }));
 
-      setColumns(columnsWithCards);
+      setColumns(columnsWithCards || []);
     } catch (err) {
       setError('Failed to load project data');
       console.error('Error loading project:', err);
@@ -47,7 +48,7 @@ export default function ProjectBoard() {
       // Implementar modal para selecionar motivo depois
       const reasonId = 1; // Temporário
       
-      await cardService.move(cardId, newColumnId, reasonId);
+      await cardService.moveCard(cardId, newColumnId, reasonId);
       await loadProjectData(); // Recarregar dados
     } catch (err) {
       console.error('Error moving card:', err);

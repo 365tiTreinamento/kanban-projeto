@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { logger } from './logger';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://10.3.70.107:8085/api';
+const API_BASE_URL = 'http://10.3.70.107:8085/api';
 
 // Log da URL da API
 logger.debug('API Base URL', { API_BASE_URL });
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
