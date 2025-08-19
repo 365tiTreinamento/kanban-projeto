@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService } from '../services/api';
 import { logger } from '../services/logger';
+import { storage } from '../utils/storage';
 
 interface User {
   id: number;
@@ -32,46 +33,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const initializeAuth = () => {
     try {
-      const token = localStorage.getItem('token');
-      const userData = localStorage.getItem('user');
+      const token = storage.getAuthToken();
+      const userData = storage.get<User>('user');
 
       logger.debug('Auth initialization', { hasToken: !!token, hasUserData: !!userData });
 
-      if (token && userData) {
-        // Verificar se userData é válido antes de fazer parse
-        if (userData.trim() === '' || userData === 'undefined' || userData === 'null') {
-          logger.warn('Invalid user data in localStorage, clearing auth', { userData });
-          clearAuthData();
-          return;
-        }
-
-        try {
-          const parsedUser = JSON.parse(userData);
-          if (parsedUser && typeof parsedUser === 'object' && parsedUser.id && parsedUser.email) {
-            setUser(parsedUser);
-            logger.info('User authenticated from localStorage', { userId: parsedUser.id });
-          } else {
-            logger.warn('Invalid user object in localStorage, clearing auth', { parsedUser });
-            clearAuthData();
-          }
-        } catch (parseError) {
-          logger.error('Error parsing user data from localStorage', parseError);
-          clearAuthData();
-        }
+      if (token && userData && userData.id && userData.email) {
+        setUser(userData);
+        logger.info('User authenticated from storage', { userId: userData.id });
       } else {
-        logger.debug('No auth data found in localStorage');
+        logger.debug('No valid auth data found in storage');
+        storage.clearAuthData();
       }
     } catch (error) {
       logger.error('Error initializing auth', error);
+      storage.clearAuthData();
     } finally {
       setLoading(false);
     }
-  };
-
-  const clearAuthData = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
   };
 
   const login = async (email: string, password: string) => {
@@ -80,21 +59,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authService.login(email, password);
       const { token, user: userData } = response.data;
       
-      // Validar dados antes de salvar
+      // Validar dados do servidor
       if (!token || !userData || !userData.id || !userData.email) {
         throw new Error('Invalid response from server');
       }
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
+      storage.setAuthData(token, userData);
       setUser(userData);
       
       logger.info('Login successful', { userId: userData.id, email: userData.email });
     } catch (error: any) {
       logger.error('Login failed', error);
-      
-      // Limpar dados inválidos em caso de erro
-      clearAuthData();
+      storage.clearAuthData();
+      setUser(null);
       
       const errorMessage = error.response?.data?.message || error.message || 'Login failed';
       throw new Error(errorMessage);
@@ -103,9 +80,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = () => {
     logger.info('User logout', { userId: user?.id });
-    clearAuthData();
+    storage.clearAuthData();
+    setUser(null);
     
-    // Tentar logout no servidor (mas não bloquear se falhar)
+    // Logout no servidor (não bloqueante)
     authService.logout().catch(error => {
       logger.warn('Logout API call failed', error);
     });
