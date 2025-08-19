@@ -1,17 +1,25 @@
-// vite.config.ts
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
+  },
+  build: {
+    rollupOptions: {
+      external: [
+        // Adicione módulos que devem ser externalizados se necessário
+      ]
+    }
+  },
   server: {
     port: 5174,
-    open: true,
-  },
-  resolve: {
-    alias: {
-      '@': '/src',
-    },
-  },
-});
+    proxy: {
+      '/api': {
+        target: 'http://10.3.70.107:8085',
+        changeOrigin: true
+      }
+    }
+  }
+})

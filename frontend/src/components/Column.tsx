@@ -1,60 +1,45 @@
-// components/Column.tsx
-import { Task } from '../types/Task';
-import { TaskCard } from './TaskCard';
+import React from 'react';
+import { Column as ColumnType, Card } from '../types';
+import CardComponent from './Card';
+import './Column.css';
 
 interface ColumnProps {
-  title: string;
-  tasks: Task[];
-  onEditTask: (task: Task) => void;
-  onDeleteTask: (id: string) => void;
-  onDragStart: (e: React.DragEvent, id: string) => void;
-  onDragOver: (e: React.DragEvent) => void;
-  onDrop: (e: React.DragEvent, status: Task['status']) => void;
+  column: ColumnType;
+  onCardMove: (cardId: number, newColumnId: number) => void;
 }
 
-const statusLabels: Record<Task['status'], string> = {
-  todo: 'To Do',
-  inProgress: 'Em Progresso',
-  done: 'Concluído',
-};
+const Column: React.FC<ColumnProps> = ({ column, onCardMove }) => {
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const cardId = parseInt(e.dataTransfer.getData('cardId'));
+    onCardMove(cardId, column.id);
+  };
 
-export const Column = ({
-  title,
-  tasks,
-  onEditTask,
-  onDeleteTask,
-  onDragStart,
-  onDragOver,
-  onDrop,
-}: ColumnProps) => {
-  const statusKey = Object.keys(statusLabels).find(
-    (key) => statusLabels[key as Task['status']] === title
-  ) as Task['status'] || 'todo';
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
 
   return (
-    <div
-      onDragOver={onDragOver}
-      onDrop={(e) => onDrop(e, statusKey)}
-      style={{
-        minWidth: '300px',
-        padding: '16px',
-        backgroundColor: '#f0f0f0',
-        borderRadius: '8px',
-        height: '100%',
-      }}
+    <div 
+      className="column"
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
     >
-      <h3>{title}</h3>
-      <div style={{ minHeight: '500px' }}>
-        {tasks.map((task) => (
-          <div
-            key={task.id}
-            draggable
-            onDragStart={(e) => onDragStart(e, task.id)}
-          >
-            <TaskCard task={task} onEdit={onEditTask} onDelete={onDeleteTask} />
-          </div>
+      <div className="column-header">
+        <h3>{column.name}</h3>
+        <span className="card-count">({column.cards?.length || 0})</span>
+      </div>
+      
+      <div className="cards-list">
+        {column.cards?.map((card) => (
+          <CardComponent 
+            key={card.id} 
+            card={card} 
+          />
         ))}
       </div>
     </div>
   );
 };
+
+export default Column;
