@@ -1,19 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authService } from '../services/api';
+import { authService } from '../services/authService';
 import { logger } from '../services/logger';
-
-interface User {
-  id: number;
-  email: string;
-  displayName: string;
-  globalRole: string;
-}
+import { storage } from '../utils/storage';
 
 interface AuthContextType {
-  user: User | null;
+  user: any | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
+  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,99 +18,83 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     initializeAuth();
   }, []);
 
-  const initializeAuth = () => {
+  const initializeAuth = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const userData = localStorage.getItem('user');
-
-      logger.debug('Auth initialization', { hasToken: !!token, hasUserData: !!userData });
-
-      if (token && userData) {
-        // Verificar se userData é válido antes de fazer parse
-        if (userData.trim() === '' || userData === 'undefined' || userData === 'null') {
-          logger.warn('Invalid user data in localStorage, clearing auth', { userData });
-          clearAuthData();
-          return;
-        }
-
-        try {
-          const parsedUser = JSON.parse(userData);
-          if (parsedUser && typeof parsedUser === 'object' && parsedUser.id && parsedUser.email) {
-            setUser(parsedUser);
-            logger.info('User authenticated from localStorage', { userId: parsedUser.id });
-          } else {
-            logger.warn('Invalid user object in localStorage, clearing auth', { parsedUser });
-            clearAuthData();
-          }
-        } catch (parseError) {
-          logger.error('Error parsing user data from localStorage', parseError);
-          clearAuthData();
+      logger.debug('Initializing authentication');
+      
+      if (authService.isAuthenticated()) {
+        const userData = authService.getCurrentUser();
+        const token = authService.getToken();
+        
+        if (userData && token) {
+          setUser(userData);
+          setIsAuthenticated(true);
+          logger.info('User authenticated from storage', { userId: userData.id });
+        } else {
+          logger.warn('Auth data exists but is invalid, clearing');
+          authService.logout();
         }
       } else {
-        logger.debug('No auth data found in localStorage');
+        logger.debug('No valid authentication data found');
       }
     } catch (error) {
       logger.error('Error initializing auth', error);
+      authService.logout();
     } finally {
       setLoading(false);
     }
   };
 
-  const clearAuthData = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-  };
-
   const login = async (email: string, password: string) => {
     try {
+      setLoading(true);
       logger.info('Login attempt', { email });
+      
       const response = await authService.login(email, password);
-      const { token, user: userData } = response.data;
       
-      // Validar dados antes de salvar
-      if (!token || !userData || !userData.id || !userData.email) {
-        throw new Error('Invalid response from server');
-      }
+      // Salvar dados de autenticação
+      storage.setAuthData(response.token, response.user);
+      
+      setUser(response.user);
+      setIsAuthenticated(true);
+      
+      logger.info('Login successful', { userId: response.user.id });
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-      
-      logger.info('Login successful', { userId: userData.id, email: userData.email });
     } catch (error: any) {
-      logger.error('Login failed', error);
+      logger.error('Login failed in context', error);
       
-      // Limpar dados inválidos em caso de erro
-      clearAuthData();
+      // Limpar dados em caso de erro
+      authService.logout();
+      setUser(null);
+      setIsAuthenticated(false);
       
-      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
-      throw new Error(errorMessage);
+      throw error; // Re-throw para ser capturado pelo componente
+    } finally {
+      setLoading(false);
     }
   };
 
   const logout = () => {
-    logger.info('User logout', { userId: user?.id });
-    clearAuthData();
-    
-    // Tentar logout no servidor (mas não bloquear se falhar)
-    authService.logout().catch(error => {
-      logger.warn('Logout API call failed', error);
-    });
+    logger.info('Logout initiated');
+    authService.logout();
+    setUser(null);
+    setIsAuthenticated(false);
   };
 
   const value = {
     user,
     login,
     logout,
-    loading
+    loading,
+    isAuthenticated
   };
 
   return (

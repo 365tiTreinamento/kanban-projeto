@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
       sourcemap: mode === 'development',
     },
     server: {
-      port: 3000,
+      port: 5174,
       proxy: {
         '/api': {
           target: env.VITE_API_URL || 'http://10.3.70.107:8085',
