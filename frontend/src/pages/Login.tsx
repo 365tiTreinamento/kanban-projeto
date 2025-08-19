@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Alert, Box, Button, Container, TextField, Typography, Paper } from '@mui/material';
+import { useLogger } from '../hooks/useLogger';
+import './Login.css';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -11,80 +12,79 @@ export default function Login() {
   
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { logAction, logError } = useLogger('Login');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
+    logAction('Login attempt', { email });
+
     try {
       await login(email, password);
+      logAction('Login successful', { email });
       navigate('/');
-    } catch (err) {
-      setError('Failed to login. Please check your credentials.');
+    } catch (err: any) {
+      const errorMessage = err.message || 'Login failed';
+      logError(err, 'Login failed');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Paper elevation={3} sx={{ padding: 4, width: '100%' }}>
-          <Typography component="h1" variant="h5" align="center" gutterBottom>
-            Kanban Board Login
-          </Typography>
-          
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
+    <div className="login-container">
+      <div className="login-card">
+        <h2>Kanban Board Login</h2>
+        
+        {error && (
+          <div className="error-alert">
+            {error}
+          </div>
+        )}
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="form-group">
+            <label htmlFor="email">Email Address</label>
+            <input
+              type="email"
               id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-            />
-            <TextField
-              margin="normal"
               required
-              fullWidth
-              name="password"
-              label="Password"
+              placeholder="Enter your email"
+              disabled={loading}
+            />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
               type="password"
               id="password"
-              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              required
+              placeholder="Enter your password"
               disabled={loading}
-            >
-              {loading ? 'Signing In...' : 'Sign In'}
-            </Button>
-          </Box>
-        </Paper>
-      </Box>
-    </Container>
+            />
+          </div>
+          
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="login-button"
+          >
+            {loading ? 'Signing In' : 'Sign In'}
+          </button>
+        </form>
+
+        <div className="login-links">
+          <a href="#forgot">Forgot password?</a>
+        </div>
+      </div>
+    </div>
   );
 }
