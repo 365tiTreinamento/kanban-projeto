@@ -1,5 +1,6 @@
 # Comandos SQL
 
+```roomsql
 CREATE TABLE board (id INT IDENTITY(1,1) PRIMARY KEY, name NVARCHAR(255) NOT NULL);
 
 CREATE TABLE list (id INT IDENTITY(1,1) PRIMARY KEY, name NVARCHAR(255) NOT NULL,
@@ -22,9 +23,11 @@ CREATE INDEX idx_card_list ON card(list_id);
 CREATE INDEX idx_cardhistory_card ON card_history(card_id);
 CREATE INDEX idx_checklist_card ON checklist(card_id);
 CREATE INDEX idx_label_card ON label(card_id);
+```
 
 ## Inserts de teste
 
+```roomsql
 INSERT INTO board (name) VALUES (N'Projeto Kanban Demo');
 
 DECLARE @BoardId INT = SCOPE_IDENTITY();
@@ -60,9 +63,11 @@ VALUES (N'CREATE', N'Card criado pelo usuário', 0, @Card1);
 
 INSERT INTO card_history (type, description, current_worked_time, card_id)
 VALUES (N'UPDATE', N'Card movido para Em Progresso', 120, @Card2);
+```
 
 ## Queriy de teste
 
+```roomsql
 SELECT
 b.id              AS board_id,
 b.name            AS board_name,
@@ -96,3 +101,4 @@ LEFT JOIN card_history h ON h.card_id = c.id
 
 WHERE b.id = @BoardId
 ORDER BY l.id, c.id, chk.id, lbl.id, h.id;
+```
