@@ -1,5 +1,6 @@
 package com.example.kanban.controller;
 
+import com.example.kanban.dto.BoardDTO;
 import com.example.kanban.entity.BoardEntity;
 import com.example.kanban.service.BoardService;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +20,13 @@ public class BoardController {
     }
 
     @GetMapping("/{id}/full")
-    public ResponseEntity<BoardEntity> getBoardFull(@PathVariable Integer id) {
+    public ResponseEntity<BoardDTO> getBoardFull(@PathVariable Integer id) {
         return ResponseEntity.ok(boardService.getBoardFull(id));
     }
 
-    @GetMapping("/{id}/lists")
+    @GetMapping("/{id}/limited")
     public ResponseEntity<BoardEntity> getBoardWithLists(@PathVariable Integer id) {
-        return ResponseEntity.ok(boardService.getBoardWithLists(id));
+        return ResponseEntity.ok(boardService.getBoard(id));
     }
 
 }

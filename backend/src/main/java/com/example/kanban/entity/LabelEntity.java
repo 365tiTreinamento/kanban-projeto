@@ -17,18 +17,17 @@ public class LabelEntity {
     private String color;
 
 
-    @ManyToOne
-    @JoinColumn(name = "card_id")
-    private CardEntity card;
+    @Column(name = "card_id")
+    private Integer cardId;
 
     public LabelEntity() {
     }
 
-    public LabelEntity(Integer id, String name, String color, CardEntity card) {
+    public LabelEntity(Integer id, String name, String color, Integer cardId) {
         this.id = id;
         this.name = name;
         this.color = color;
-        this.card = card;
+        this.cardId = cardId;
     }
 
     public Integer getId() {
@@ -43,8 +42,8 @@ public class LabelEntity {
         return color;
     }
 
-    public CardEntity getCard() {
-        return card;
+    public Integer getCardId() {
+        return cardId;
     }
 
 }

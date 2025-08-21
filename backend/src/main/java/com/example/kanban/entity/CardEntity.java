@@ -2,9 +2,6 @@ package com.example.kanban.entity;
 
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Table(name = "card")
 public class CardEntity {
@@ -25,29 +22,15 @@ public class CardEntity {
     @Column(name = "board_id")
     private Integer boardId;
 
-    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CardHistoryEntity> history = new ArrayList<>();
-
-    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CheckListEntity> checklists = new ArrayList<>();
-
-    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<LabelEntity> labels = new ArrayList<>();
-
     public CardEntity() {
     }
 
-    public CardEntity(Integer id, String name, String description, Long workedTime, Integer boardId,
-                      ArrayList<CardHistoryEntity> history, ArrayList<CheckListEntity> checklists,
-                      ArrayList<LabelEntity> labels) {
+    public CardEntity(Integer id, String name, String description, Long workedTime, Integer boardId) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.workedTime = workedTime;
         this.boardId = boardId;
-        this.history = history;
-        this.checklists = checklists;
-        this.labels = labels;
     }
 
     public Integer getId() {
@@ -84,18 +67,6 @@ public class CardEntity {
 
     public void setBoardId(Integer boardId) {
         this.boardId = boardId;
-    }
-
-    public List<CardHistoryEntity> getHistory() {
-        return history;
-    }
-
-    public List<CheckListEntity> getChecklists() {
-        return checklists;
-    }
-
-    public List<LabelEntity> getLabels() {
-        return labels;
     }
 
 }

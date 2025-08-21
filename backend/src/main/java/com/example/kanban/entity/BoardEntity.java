@@ -16,7 +16,7 @@ public class BoardEntity {
     @Column(name = "name")
     private String name;
 
-    @OneToMany(mappedBy = "list", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "boardId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<CardEntity> cards = new ArrayList<>();
 
     public BoardEntity() {
@@ -42,6 +42,10 @@ public class BoardEntity {
 
     public List<CardEntity> getCards() {
         return cards;
+    }
+
+    public void setCards(List<CardEntity> cards) {
+        this.cards = cards;
     }
 
 }

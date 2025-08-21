@@ -19,20 +19,18 @@ public class CardHistoryEntity {
     @Column(name = "current_worked_time")
     private Long currentWorkedTime;
 
-
-    @ManyToOne
-    @JoinColumn(name = "card_id")
-    private CardEntity card;
+    @Column(name = "card_id")
+    private Integer cardId;
 
     public CardHistoryEntity() {
     }
 
-    public CardHistoryEntity(Integer id, String type, String description, Long currentWorkedTime, CardEntity card) {
+    public CardHistoryEntity(Integer id, String type, String description, Long currentWorkedTime, Integer cardId) {
         this.id = id;
         this.type = type;
         this.description = description;
         this.currentWorkedTime = currentWorkedTime;
-        this.card = card;
+        this.cardId = cardId;
     }
 
     public Integer getId() {
@@ -51,8 +49,8 @@ public class CardHistoryEntity {
         return currentWorkedTime;
     }
 
-    public CardEntity getCard() {
-        return card;
+    public Integer getCardId() {
+        return cardId;
     }
 
 }

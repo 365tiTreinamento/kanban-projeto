@@ -14,10 +14,10 @@ public class CorsConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true); // permite envio de cookies/autenticação
-        config.addAllowedOriginPattern("*"); // permite todas as origens
+        config.setAllowCredentials(true);
+        config.addAllowedOriginPattern("*");
         config.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
-        config.addAllowedHeader("*"); // permite todos os headers
+        config.addAllowedHeader("*");
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

@@ -14,17 +14,16 @@ public class CheckListEntity {
     private String name;
 
 
-    @ManyToOne
-    @JoinColumn(name = "card_id")
-    private CardEntity card;
+    @Column(name = "card_id")
+    private Integer cardId;
 
     public CheckListEntity() {
     }
 
-    public CheckListEntity(Integer id, String name, CardEntity card) {
+    public CheckListEntity(Integer id, String name, Integer cardId) {
         this.id = id;
         this.name = name;
-        this.card = card;
+        this.cardId = cardId;
     }
 
     public Integer getId() {
@@ -35,8 +34,8 @@ public class CheckListEntity {
         return name;
     }
 
-    public CardEntity getCard() {
-        return card;
+    public Integer getCardId() {
+        return cardId;
     }
 
 }
