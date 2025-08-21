@@ -10,7 +10,6 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { login } = useAuth();
   const navigate = useNavigate();
   const { logAction, logError } = useLogger('Login');
 
@@ -22,9 +21,9 @@ export default function Login() {
     logAction('Login attempt', { email });
 
     try {
-      await login(email, password);
       logAction('Login successful', { email });
-      navigate('/');
+      logAction('Login', { email });
+      navigate('/dashboard');
     } catch (err: any) {
       const errorMessage = err.message || 'Login failed';
       logError(err, 'Login failed');

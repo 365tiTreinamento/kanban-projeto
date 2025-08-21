@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import api from '../api'
 import Board from '../ui/Board'
 
 export default function App() {
@@ -8,8 +7,6 @@ export default function App() {
 
   useEffect(()=>{
     const run = async () => {
-      const res = await api.post('/auth/login', { email: 'admin@local', password: 'admin123' })
-      setToken(res.data.token)
     }
     run()
   }, [])

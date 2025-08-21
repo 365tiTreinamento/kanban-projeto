@@ -100,12 +100,78 @@ class CardService {
   async getAllCards(projectId: number): Promise<Card[]> {
     try {
       logger.debug('Fetching all cards for project', { projectId });
-      const response = await api.get<Card[]>(`/projects/${projectId}/cards`);
-      logger.info('Cards fetched successfully', { 
-        projectId, 
-        count: response.data.length 
+
+      let data = []
+      data.push({
+        id: 1,
+        name: "Project test",
+        description: "Desc",
+        createdAt: "...",
+        createdBy: 1,
+        columns: [{
+          id: 1,
+          name: "Column 1",
+          position: 1,
+          projectId: 1,
+          cards: [{
+            id: 1,
+            title: "Card 1",
+            description: "Description card",
+            position: 1,
+            columnId: 1,
+            createdAt: "..."
+          }]
+        },
+        {
+          id: 2,
+          name: "Column 2",
+          position: 1,
+          projectId: 1,
+          cards: [{
+            id: 2,
+            title: "Card 2",
+            description: "Description card",
+            position: 1,
+            columnId: 2,
+            createdAt: "..."
+          }]
+        }],
+        members: [{
+          id: 1,
+          role: "Admin",
+          projectId: 1,
+          userId: 1,
+          user: {
+            id: 1,
+            email: "test@mail",
+            displayName: "Pedro Pedro Pedro",
+            globalRole: "Admin"
+          }
+        }]
+      })
+
+      logger.info('Cards fetched successfully', {
+        projectId,
+        count: 1
       });
-      return response.data;
+      return [
+        {
+          id: 1,
+          title: "Card 1",
+          description: "Description card",
+          position: 1,
+          columnId: 1,
+          createdAt: "..."
+        },
+        {
+          id: 2,
+          title: "Card 2",
+          description: "Description card",
+          position: 1,
+          columnId: 2,
+          createdAt: "..."
+        }
+      ];
     } catch (error: any) {
       logger.error('Failed to fetch cards', { projectId, error });
       throw this.handleError(error, `Failed to fetch cards for project ${projectId}`);
@@ -128,8 +194,8 @@ class CardService {
     try {
       logger.debug('Creating new card', { projectId, data: cardData });
       const response = await api.post<Card>(`/projects/${projectId}/cards`, cardData);
-      logger.info('Card created successfully', { 
-        cardId: response.data.id, 
+      logger.info('Card created successfully', {
+        cardId: response.data.id,
         title: response.data.title,
         projectId
       });
@@ -167,10 +233,10 @@ class CardService {
   async moveCard(cardId: number, newColumnId: number, reasonId: number): Promise<Card> {
     try {
       const response = await api.post<Card>(`${this.baseURL}/${cardId}/move`);
-      logger.info('Card moved successfully', { 
-        cardId, 
+      logger.info('Card moved successfully', {
+        cardId,
         newColumnId: newColumnId,
-        newPosition: reasonId 
+        newPosition: reasonId
       });
       return response.data;
     } catch (error: any) {
@@ -256,9 +322,9 @@ class CardService {
     try {
       logger.debug('Starting time entry for card', { cardId, data: timeData });
       const response = await api.post<TimeEntry>(`${this.baseURL}/${cardId}/time/start`, timeData);
-      logger.info('Time entry started successfully', { 
-        cardId, 
-        timeEntryId: response.data.id 
+      logger.info('Time entry started successfully', {
+        cardId,
+        timeEntryId: response.data.id
       });
       return response.data;
     } catch (error: any) {
@@ -318,7 +384,7 @@ class CardService {
   async uploadAttachment(cardId: number, file: File, isLogo: boolean = false): Promise<Attachment> {
     try {
       logger.debug('Uploading attachment to card', { cardId, filename: file.name, isLogo });
-      
+
       const formData = new FormData();
       formData.append('file', file);
       formData.append('isLogo', isLogo.toString());
@@ -333,10 +399,10 @@ class CardService {
         }
       );
 
-      logger.info('Attachment uploaded successfully', { 
-        cardId, 
+      logger.info('Attachment uploaded successfully', {
+        cardId,
         attachmentId: response.data.id,
-        filename: response.data.filename 
+        filename: response.data.filename
       });
       return response.data;
     } catch (error: any) {
@@ -372,7 +438,7 @@ class CardService {
   private handleError(error: any, defaultMessage: string): Error {
     if (error.response) {
       const { status, data } = error.response;
-      
+
       switch (status) {
         case 400:
           return new Error(data?.message || 'Invalid request data');

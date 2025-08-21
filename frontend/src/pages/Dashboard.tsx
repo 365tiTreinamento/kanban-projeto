@@ -1,70 +1,175 @@
-import React, { useState, useEffect } from 'react';
-import { projectService } from '../services/projectService';
-import { Project } from '../types';
-import { Link } from 'react-router-dom';
-import './Dashboard.css';
+import { useEffect, useState } from "react";
+import Board from "./../components/Board/Board";
+import { DragDropContext, type DropResult } from "@hello-pangea/dnd";
+import { v4 as uuidv4 } from "uuid";
+import Editable from "./../components/Editable/Editable";
+import useLocalStorage from "use-local-storage";
 
+interface Tag {
+  id: string;
+  tagName: string;
+  color: string;
+}
 
-export default function Dashboard() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+interface Task {
+  id: string;
+  task: string;
+  completed: boolean;
+}
 
-  useEffect(() => {
-    loadProjects();
-  }, []);
+interface ICard {
+  id: string;
+  title: string;
+  tags: Tag[];
+  task: Task[];
+}
 
-  const loadProjects = async () => {
-    try {
-      const response = await projectService.getAllProjects();
-      setProjects(response);
-    } catch (err) {
-      setError('Failed to load projects');
-      console.error('Error loading projects:', err);
-    } finally {
-      setLoading(false);
-    }
+interface BoardData {
+  id: string;
+  boardName: string;
+  card: ICard[];
+}
+
+function Dashboard() {
+  const [data, setData] = useState<BoardData[]>(() => {
+    const storedData = localStorage.getItem("kanban-board");
+    return storedData ? JSON.parse(storedData) : [];
+  });
+
+  const setName = (title: string, bid: string) => {
+    const index = data.findIndex((item) => item.id === bid);
+    if (index === -1) return;
+
+    const tempData = [...data];
+    tempData[index].boardName = title;
+    setData(tempData);
   };
 
-  if (loading) return <div className="loading">Loading dashboard...</div>;
-  if (error) return <div className="error">{error}</div>;
+  const dragCardInBoard = (source: any, destination: any) => {
+    let tempData = [...data];
+    const destinationBoardIdx = tempData.findIndex(
+      (item) => item.id.toString() === destination.droppableId
+    );
+    const sourceBoardIdx = tempData.findIndex(
+      (item) => item.id.toString() === source.droppableId
+    );
+
+    if (destinationBoardIdx === -1 || sourceBoardIdx === -1) return tempData;
+
+    tempData[destinationBoardIdx].card.splice(
+      destination.index,
+      0,
+      tempData[sourceBoardIdx].card[source.index]
+    );
+    tempData[sourceBoardIdx].card.splice(source.index, 1);
+
+    return tempData;
+  };
+
+  const addCard = (title: string, bid: string) => {
+    const index = data.findIndex((item) => item.id === bid);
+    if (index === -1) return;
+
+    const tempData = [...data];
+    tempData[index].card.push({
+      id: uuidv4(),
+      title: title,
+      tags: [],
+      task: [],
+    });
+    setData(tempData);
+  };
+
+  const removeCard = (boardId: string, cardId: string) => {
+    const index = data.findIndex((item) => item.id === boardId);
+    if (index === -1) return;
+
+    const tempData = [...data];
+    const cardIndex = data[index].card.findIndex((item) => item.id === cardId);
+    if (cardIndex === -1) return;
+
+    tempData[index].card.splice(cardIndex, 1);
+    setData(tempData);
+  };
+
+  const addBoard = (title: string) => {
+    const tempData = [...data];
+    tempData.push({
+      id: uuidv4(),
+      boardName: title,
+      card: [],
+    });
+    setData(tempData);
+  };
+
+  const removeBoard = (bid: string) => {
+    const tempData = [...data];
+    const index = data.findIndex((item) => item.id === bid);
+    if (index === -1) return;
+
+    tempData.splice(index, 1);
+    setData(tempData);
+  };
+
+  const onDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+    if (!destination) return;
+
+    if (source.droppableId === destination.droppableId) return;
+
+    setData(dragCardInBoard(source, destination));
+  };
+
+  const updateCard = (bid: string, cid: string, card: ICard) => {
+    const index = data.findIndex((item) => item.id === bid);
+    if (index < 0) return;
+
+    const tempBoards = [...data];
+    const cards = tempBoards[index].card;
+
+    const cardIndex = cards.findIndex((item) => item.id === cid);
+    if (cardIndex < 0) return;
+
+    tempBoards[index].card[cardIndex] = card;
+    console.log(tempBoards);
+    setData(tempBoards);
+  };
+
+  useEffect(() => {
+    localStorage.setItem("kanban-board", JSON.stringify(data));
+  }, [data]);
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
-        <h1>My Projects</h1>
-        <Link to="/projects" className="view-all-link">
-          View All Projects
-        </Link>
-      </div>
+    <DragDropContext onDragEnd={onDragEnd}>
+      <div className="flex flex-col h-screen w-full bg-[var(--background-color)] transition-all duration-350 text-black">
+        <div className="flex-1 w-full overflow-x-auto">
+          <div className="flex gap-7 mt-5 px-8 min-w-max text-[var(--text-color)]">
+            {data.map((item) => (
+              <Board
+                key={item.id}
+                id={item.id}
+                name={item.boardName}
+                card={item.card}
+                setName={setName}
+                addCard={addCard}
+                removeCard={removeCard}
+                removeBoard={removeBoard}
+                updateCard={updateCard}
+              />
+            ))}
 
-      <div className="projects-grid">
-        {projects.slice(0, 6).map((project) => (
-          <Link
-            key={project.id}
-            to={`/project/${project.id}`}
-            className="project-card"
-          >
-            <div className="project-card-content">
-              <h3>{project.name}</h3>
-              <p>{project.description}</p>
-              <div className="project-meta">
-                <span>Created: {new Date(project.createdAt).toLocaleDateString()}</span>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      {projects.length === 0 && (
-        <div className="empty-state">
-          <h2>No projects yet</h2>
-          <p>Create your first project to get started</p>
-          <Link to="/projects" className="create-project-btn">
-            Create Project
-          </Link>
+            <Editable
+              class="w-[250px] flex-shrink-0 "
+              name="Adicionar quadro"
+              btnName="Adicionar"
+              onSubmit={addBoard}
+              placeholder="Título do quadro"
+            />
+          </div>
         </div>
-      )}
-    </div>
+      </div>
+    </DragDropContext>
   );
 }
+
+export default Dashboard;

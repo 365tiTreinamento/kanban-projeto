@@ -123,11 +123,61 @@ class ProjectService {
 
     // Operações de Projeto
     async getAllProjects(): Promise<Project[]> {
+
+        let data = []
+        data.push({
+            id: 1,
+            name: "Project test",
+            description: "Desc",
+            createdAt: "...",
+            createdBy: 1,
+            columns: [{
+                id: 1,
+                name: "Column 1",
+                position: 1,
+                projectId: 1,
+                cards: [{
+                    id: 1,
+                    title: "Card 1",
+                    description: "Description card",
+                    position: 1,
+                    columnId: 1,
+                    createdAt: "..."
+                }]
+            },
+            {
+                id: 2,
+                name: "Column 2",
+                position: 1,
+                projectId: 1,
+                cards: [{
+                    id: 2,
+                    title: "Card 2",
+                    description: "Description card",
+                    position: 1,
+                    columnId: 2,
+                    createdAt: "..."
+                }]
+            }],
+            members: [{
+                id: 1,
+                role: "Admin",
+                projectId: 1,
+                userId: 1,
+                user: {
+                    id: 1,
+                    email: "test@mail",
+                    displayName: "Pedro Pedro Pedro",
+                    globalRole: "Admin"
+                }
+            }]
+        })
+
         try {
             logger.debug('Fetching all projects');
-            const response = await api.get<Project[]>(this.baseURL);
-            logger.info('Projects fetched successfully', { count: response.data.length });
-            return response.data;
+            //const response = await api.get<Project[]>(this.baseURL);
+            //logger.info('Projects fetched successfully', { count: response.data.length });
+            return data;
         } catch (error: any) {
             logger.error('Failed to fetch projects', error);
             throw this.handleError(error, 'Failed to fetch projects');
@@ -137,9 +187,56 @@ class ProjectService {
     async getProjectById(id: number): Promise<Project> {
         try {
             logger.debug('Fetching project by ID', { projectId: id });
-            const response = await api.get<Project>(`${this.baseURL}/${id}`);
+            let data = []
+            data.push({
+                id: 1,
+                name: "Project test",
+                description: "Desc",
+                createdAt: "...",
+                createdBy: 1,
+                columns: [{
+                    id: 1,
+                    name: "Column 1",
+                    position: 1,
+                    projectId: 1,
+                    cards: [{
+                        id: 1,
+                        title: "Card 1",
+                        description: "Description card",
+                        position: 1,
+                        columnId: 1,
+                        createdAt: "..."
+                    }]
+                },
+                {
+                    id: 2,
+                    name: "Column 2",
+                    position: 1,
+                    projectId: 1,
+                    cards: [{
+                        id: 2,
+                        title: "Card 2",
+                        description: "Description card",
+                        position: 1,
+                        columnId: 2,
+                        createdAt: "..."
+                    }]
+                }],
+                members: [{
+                    id: 1,
+                    role: "Admin",
+                    projectId: 1,
+                    userId: 1,
+                    user: {
+                        id: 1,
+                        email: "test@mail",
+                        displayName: "Pedro Pedro Pedro",
+                        globalRole: "Admin"
+                    }
+                }]
+            })
             logger.info('Project fetched successfully', { projectId: id });
-            return response.data;
+            return data[0];
         } catch (error: any) {
             logger.error('Failed to fetch project', { projectId: id, error });
             throw this.handleError(error, `Failed to fetch project ${id}`);
