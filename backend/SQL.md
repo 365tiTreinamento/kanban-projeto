@@ -28,7 +28,7 @@ CREATE INDEX idx_label_card ON label(card_id);
 ## Inserts de teste
 
 ```roomsql
-INSERT INTO board (name) VALUES (N'Projeto Kanban Demo');
+INSERT INTO board (name) VALUES (N'Board 1');
 
 DECLARE @BoardId INT = SCOPE_IDENTITY();
 
@@ -40,29 +40,29 @@ SELECT @ListTodo = id FROM list WHERE name = N'A Fazer' AND board_id = @BoardId;
 SELECT @ListDoing = id FROM list WHERE name = N'Em Progresso' AND board_id = @BoardId;
 
 INSERT INTO card (name, description, worked_time, list_id)
-VALUES (N'Configurar ambiente', N'Instalar dependências e configurar projeto.', 0, @ListTodo);
+VALUES (N'Card 1', N'Descrição do card', 0, @ListTodo);
 
 INSERT INTO card (name, description, worked_time, list_id)
-VALUES (N'Criar tela de login', N'Implementar frontend + backend.', 120, @ListDoing);
+VALUES (N'Card 2', N'Descrição do card', 1, @ListDoing);
 
 DECLARE @Card1 INT, @Card2 INT;
-SELECT @Card1 = id FROM card WHERE name = N'Configurar ambiente' AND list_id = @ListTodo;
-SELECT @Card2 = id FROM card WHERE name = N'Criar tela de login' AND list_id = @ListDoing;
+SELECT @Card1 = id FROM card WHERE name = N'Card 1' AND list_id = @ListTodo;
+SELECT @Card2 = id FROM card WHERE name = N'Card 2' AND list_id = @ListDoing;
 
 INSERT INTO label (name, color, card_id) VALUES (N'Backend', N'red', @Card1);
 INSERT INTO label (name, color, card_id) VALUES (N'Frontend', N'blue', @Card2);
 INSERT INTO label (name, color, card_id) VALUES (N'Urgente', N'orange', @Card2);
 
-INSERT INTO checklist (name, card_id) VALUES (N'Clonar repositório', @Card1);
-INSERT INTO checklist (name, card_id) VALUES (N'Configurar banco de dados', @Card1);
-INSERT INTO checklist (name, card_id) VALUES (N'Criar tela de login no frontend', @Card2);
-INSERT INTO checklist (name, card_id) VALUES (N'Integrar autenticação no backend', @Card2);
+INSERT INTO checklist (name, card_id) VALUES (N'1', @Card1);
+INSERT INTO checklist (name, card_id) VALUES (N'2', @Card1);
+INSERT INTO checklist (name, card_id) VALUES (N'3', @Card2);
+INSERT INTO checklist (name, card_id) VALUES (N'4', @Card2);
 
 INSERT INTO card_history (type, description, current_worked_time, card_id)
 VALUES (N'CREATE', N'Card criado pelo usuário', 0, @Card1);
 
 INSERT INTO card_history (type, description, current_worked_time, card_id)
-VALUES (N'UPDATE', N'Card movido para Em Progresso', 120, @Card2);
+VALUES (N'UPDATE', N'Card movido para Em Progresso', 1, @Card2);
 ```
 
 ## Queriy de teste
