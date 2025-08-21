@@ -6,21 +6,25 @@ import CardDetails from "./CardDetails/CardDetails";
 
 interface TagType {
   id: string;
-  tagName: string;
+  name: string;
   color: string;
+  cardId: string;
 }
 
 interface TaskType {
   id: string;
-  task: string;
-  completed: boolean;
+  name: string;
+  cardId: string;
 }
 
 interface CardType {
   id: string;
-  title: string;
-  tags: TagType[];
-  task: TaskType[];
+  name: string;
+  description: string;
+  workedTime: number;
+  boardId: string;
+  checklists: TaskType[];
+  labels: TagType[];
 }
 
 interface CardProps {
@@ -79,21 +83,21 @@ const Card = (props: CardProps) => {
             {/* Tags */}
             <div className="flex flex-wrap gap-1 mt-1">
               {props.tags?.map((item, index) => (
-                <Tag key={index} tagName={item.tagName} color={item.color} />
+                <Tag key={index} tagName={item.name} color={item.color} />
               ))}
             </div>
 
             {/* Footer */}
             <div className="flex justify-between items-center mt-2">
-              {props.card.task.length !== 0 && (
+              {props.card.checklists.length !== 0 && (
                 <div className="flex items-center gap-1 text-gray-500 text-xs font-medium">
                   <CheckSquare className="w-4 h-4 text-green-700" />
                   <span>
                     {
                       `${
-                        props.card.task.filter((item) => item.completed === true)
+                        props.card.checklists.filter((item) => false)
                           .length
-                      } / ${props.card.task.length}`
+                      } / ${props.card.checklists.length}`
                     }
                   </span>
                 </div>

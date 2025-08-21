@@ -3,39 +3,50 @@ import Board from "./../components/Board/Board";
 import { DragDropContext, type DropResult } from "@hello-pangea/dnd";
 import { v4 as uuidv4 } from "uuid";
 import Editable from "./../components/Editable/Editable";
-import useLocalStorage from "use-local-storage";
+import { api } from '../services/api';
 
 interface Tag {
   id: string;
-  tagName: string;
+  name: string;
   color: string;
+  cardId: string;
 }
 
 interface Task {
   id: string;
-  task: string;
-  completed: boolean;
+  name: string;
+  cardId: string;
 }
 
 interface ICard {
   id: string;
-  title: string;
-  tags: Tag[];
-  task: Task[];
+  name: string;
+  description: string;
+  workedTime: number;
+  boardId: string;
+  checklists: Task[]
+  labels: Tag[]
 }
 
 interface BoardData {
   id: string;
   boardName: string;
-  card: ICard[];
+  cards: ICard[];
 }
 
 function Dashboard() {
-  const [data, setData] = useState<BoardData[]>(() => {
-    const storedData = localStorage.getItem("kanban-board");
-    return storedData ? JSON.parse(storedData) : [];
-  });
+  const [data, setData] = useState<BoardData[]>([]);
+  if (data.length < 1) {
+    api.get<BoardData>(`http://localhost:8080/boards/1/full`).then(response => {
+      console.log("response")
+      console.log(response.data)
+      let a: BoardData[] = []
+      a.push(response.data)
+      setData(a)
+    });
+    console.log("request made")
 
+  }
   const setName = (title: string, bid: string) => {
     const index = data.findIndex((item) => item.id === bid);
     if (index === -1) return;
@@ -56,12 +67,12 @@ function Dashboard() {
 
     if (destinationBoardIdx === -1 || sourceBoardIdx === -1) return tempData;
 
-    tempData[destinationBoardIdx].card.splice(
+    tempData[destinationBoardIdx].cards.splice(
       destination.index,
       0,
-      tempData[sourceBoardIdx].card[source.index]
+      tempData[sourceBoardIdx].cards[source.index]
     );
-    tempData[sourceBoardIdx].card.splice(source.index, 1);
+    tempData[sourceBoardIdx].cards.splice(source.index, 1);
 
     return tempData;
   };
@@ -71,11 +82,14 @@ function Dashboard() {
     if (index === -1) return;
 
     const tempData = [...data];
-    tempData[index].card.push({
+    tempData[index].cards.push({
       id: uuidv4(),
-      title: title,
-      tags: [],
-      task: [],
+      name: title,
+      labels: [],
+      checklists: [],
+      description: "",
+      workedTime: 0,
+      boardId: bid
     });
     setData(tempData);
   };
@@ -85,10 +99,10 @@ function Dashboard() {
     if (index === -1) return;
 
     const tempData = [...data];
-    const cardIndex = data[index].card.findIndex((item) => item.id === cardId);
+    const cardIndex = data[index].cards.findIndex((item) => item.id === cardId);
     if (cardIndex === -1) return;
 
-    tempData[index].card.splice(cardIndex, 1);
+    tempData[index].cards.splice(cardIndex, 1);
     setData(tempData);
   };
 
@@ -97,7 +111,7 @@ function Dashboard() {
     tempData.push({
       id: uuidv4(),
       boardName: title,
-      card: [],
+      cards: [],
     });
     setData(tempData);
   };
@@ -125,18 +139,18 @@ function Dashboard() {
     if (index < 0) return;
 
     const tempBoards = [...data];
-    const cards = tempBoards[index].card;
+    const cards = tempBoards[index].cards;
 
     const cardIndex = cards.findIndex((item) => item.id === cid);
     if (cardIndex < 0) return;
 
-    tempBoards[index].card[cardIndex] = card;
+    tempBoards[index].cards[cardIndex] = card;
     console.log(tempBoards);
     setData(tempBoards);
   };
 
   useEffect(() => {
-    localStorage.setItem("kanban-board", JSON.stringify(data));
+    // TODO: Update sql
   }, [data]);
 
   return (
@@ -149,7 +163,7 @@ function Dashboard() {
                 key={item.id}
                 id={item.id}
                 name={item.boardName}
-                card={item.card}
+                card={item.cards}
                 setName={setName}
                 addCard={addCard}
                 removeCard={removeCard}

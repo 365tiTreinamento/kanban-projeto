@@ -5,8 +5,9 @@ import { Check, X } from "react-feather";
 
 interface TagType {
   id: string;
-  tagName: string;
+  name: string;
   color: string;
+  cardId: string;
 }
 
 interface LabelProps {

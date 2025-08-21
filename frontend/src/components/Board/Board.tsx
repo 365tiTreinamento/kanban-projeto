@@ -7,21 +7,25 @@ import { Droppable } from "@hello-pangea/dnd";
 
 interface CardType {
   id: string;
-  title: string;
-  tags: Tag[];
-  task: Task[];
+  name: string;
+  description: string;
+  workedTime: number;
+  boardId: string;
+  checklists: Task[]
+  labels: Tag[]
 }
 
 interface Tag {
   id: string;
-  tagName: string;
+  name: string;
   color: string;
+  cardId: string;
 }
 
 interface Task {
   id: string;
-  task: string;
-  completed: boolean;
+  name: string;
+  cardId: string;
 }
 
 interface BoardProps {
@@ -38,6 +42,9 @@ interface BoardProps {
 export default function Board(props: BoardProps) {
   const [show, setShow] = useState(false);
   const [dropdown, setDropdown] = useState(false);
+
+  console.log("card: ")
+  console.log(props.card)
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -124,8 +131,8 @@ export default function Board(props: BoardProps) {
                 id={items.id}
                 index={index}
                 key={items.id}
-                title={items.title}
-                tags={items.tags}
+                title={items.name}
+                tags={items.labels}
                 updateCard={props.updateCard}
                 removeCard={props.removeCard}
                 card={items}

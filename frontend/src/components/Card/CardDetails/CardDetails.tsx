@@ -14,21 +14,25 @@ import Label from "../../Label/Label";
 
 interface TagType {
   id: string;
-  tagName: string;
+  name: string;
   color: string;
+  cardId: string;
 }
 
 interface TaskType {
   id: string;
-  task: string;
-  completed: boolean;
+  name: string;
+  cardId: string;
 }
 
 interface CardType {
   id: string;
-  title: string;
-  tags: TagType[];
-  task: TaskType[];
+  name: string;
+  description: string;
+  workedTime: number;
+  boardId: string;
+  checklists: TaskType[];
+  labels: TagType[];
 }
 
 interface CardDetailsProps {
@@ -44,7 +48,7 @@ export default function CardDetails(props: CardDetailsProps) {
 
   const [values, setValues] = useState<CardType>({ ...props.card });
   const [input, setInput] = useState(false);
-  const [text, setText] = useState(values.title);
+  const [text, setText] = useState(values.name);
   const [labelShow, setLabelShow] = useState(false);
 
   const Input = () => (
@@ -60,54 +64,55 @@ export default function CardDetails(props: CardDetailsProps) {
   const addTask = (value: string) => {
     const newTask: TaskType = {
       id: uuidv4(),
-      task: value,
-      completed: false,
+      name: value,
+      cardId: props.card.id
     };
-    setValues({ ...values, task: [...values.task, newTask] });
+    setValues({ ...values, checklists: [...values.checklists, newTask] });
   };
 
   const removeTask = (id: string) =>
-    setValues({ ...values, task: values.task.filter((t) => t.id !== id) });
+    setValues({ ...values, checklists: values.checklists.filter((t) => t.id !== id) });
 
-  const deleteAllTask = () => setValues({ ...values, task: [] });
+  const deleteAllTask = () => setValues({ ...values, checklists: [] });
 
   const updateTask = (id: string) =>
     setValues({
       ...values,
-      task: values.task.map((t) =>
-        t.id === id ? { ...t, completed: !t.completed } : t
+      checklists: values.checklists.map((t) =>
+        t.id === id ? { ...t } : t
       ),
     });
 
   const updateTitle = (value: string) =>
-    setValues({ ...values, title: value });
+    setValues({ ...values, name: value });
 
   const calculatePercent = () => {
-    if (values.task.length === 0) return 0;
-    const completed = values.task.filter((t) => t.completed).length;
-    return Math.floor((completed * 100) / values.task.length);
+    if (values.checklists.length === 0) return 0;
+    // TODO: COMPLETED
+    const completed = values.checklists.filter((t) => true).length;
+    return Math.floor((completed * 100) / values.checklists.length);
   };
 
   const removeTag = (id: string) =>
-    setValues({ ...values, tags: values.tags.filter((t) => t.id !== id) });
+    setValues({ ...values, labels: values.labels.filter((t) => t.id !== id) });
 
   const addTag = (value: string, color: string) =>
     setValues({
       ...values,
-      tags: [...values.tags, { id: uuidv4(), tagName: value, color }],
+      labels: [...values.labels, { id: uuidv4(), name: value, color, cardId: props.card.id }],
     });
 
   const handleKeyPress = (e: KeyboardEvent) => {
     if (e.code === "Enter") {
       setInput(false);
-      updateTitle(text === "" ? values.title : text);
+      updateTitle(text === "" ? values.name : text);
     }
   };
 
   useEffect(() => {
     document.addEventListener("keypress", handleKeyPress);
     return () => document.removeEventListener("keypress", handleKeyPress);
-  }, [text, values.title]);
+  }, [text, values.name]);
 
   useEffect(() => {
     props.updateCard(props.bid, values.id, values);
@@ -125,7 +130,7 @@ export default function CardDetails(props: CardDetailsProps) {
               className="cursor-pointer text-lg font-semibold"
               onClick={() => setInput(true)}
             >
-              {values.title}
+              {values.name}
             </h5>
           )}
         </div>
@@ -135,16 +140,16 @@ export default function CardDetails(props: CardDetailsProps) {
           <div className="col-span-2">
             <h6 className="font-semibold">Label</h6>
             <div className="flex flex-wrap gap-2 mt-1 mb-3">
-              {values.tags.length > 0 ? (
-                values.tags.map((tag) => (
+              {values.labels.length > 0 ? (
+                values.labels.map((tag) => (
                   <span
                     key={tag.id}
                     className="flex items-center gap-1 px-3 py-1 rounded text-white font-semibold"
                     style={{ backgroundColor: tag.color }}
                   >
-                    {tag.tagName.length > 10
-                      ? tag.tagName.slice(0, 6) + "..."
-                      : tag.tagName}
+                    {tag.name.length > 10
+                      ? tag.name.slice(0, 6) + "..."
+                      : tag.name}
                     <X
                       onClick={() => removeTag(tag.id)}
                       className="w-4 h-4 cursor-pointer"
@@ -181,22 +186,22 @@ export default function CardDetails(props: CardDetailsProps) {
               </div>
 
               <div className="flex flex-col gap-2">
-                {values.task.map((t) => (
+                {values.checklists.map((t) => (
                   <div
                     key={t.id}
                     className="flex items-center gap-2 p-2 rounded hover:bg-gray-50"
                   >
                     <input
                       type="checkbox"
-                      checked={t.completed}
+                      checked={true}
                       onChange={() => updateTask(t.id)}
                       className="w-4 h-4 cursor-pointer"
                     />
                     <p
-                      className={`flex-grow text-sm ${t.completed ? "line-through text-gray-400" : ""
+                      className={`flex-grow text-sm ${true ? "line-through text-gray-400" : ""
                         }`}
                     >
-                      {t.task}
+                      {t.name}
                     </p>
                     <Trash
                       onClick={() => removeTask(t.id)}
@@ -232,7 +237,7 @@ export default function CardDetails(props: CardDetailsProps) {
                 <Label
                   color={colors}
                   addTag={addTag}
-                  tags={values.tags}
+                  tags={values.labels}
                   onClose={() => setLabelShow(false)}
                 />
               )}
